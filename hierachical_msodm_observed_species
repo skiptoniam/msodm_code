@@ -1,0 +1,58 @@
+model {
+    
+    # Priors 
+    for(k in 1:nspec){
+        lpsi[k] ~ dnorm(mu.lpsi, tau.lpsi)
+        lp[k] ~ dnorm(mu.lp, tau.lp)
+        beta.gear[k] ~ dnorm(mu.beta.gear,tau.beta.gear)
+    }
+    
+    # Hyperpriors
+    mu.lpsi ~ dnorm(0,0.001)
+    tau.lpsi <- pow(sd.lpsi, -2)
+    sd.lpsi ~ dunif(0,5) #logit scale
+    mu.lp ~ dnorm(0,0.001)
+    tau.lp <- pow(sd.lp, -2)
+    sd.lp ~ dunif(0,5) #logit scale
+    mu.beta.gear ~ dnorm(0,0.001)
+    tau.beta.gear <- pow(sd.beta.gear, -2)
+    sd.beta.gear ~ dunif(0,5) #logit scale
+    
+    for(k in 1:nspec){
+      for(ii in 1:J){ 
+          beta_mean[k,ii] ~ dnorm(mu.beta[ii],tau.beta)
+        }
+     }
+    
+     for(ii in 1:J){
+       mu.beta[ii] ~ dnorm(beta.ints[ii], 0.001)
+     }
+     tau.beta <- pow(sd.beta, -2)
+     sd.beta ~ dunif(0,5)
+    
+    # Ecological model for latent occurrence z (process model)
+    for(k in 1:nspec){
+        for (i in 1:nsite) {
+            logit(psi[i,k]) <- lpsi[k] + inprod(beta_mean[k,],X[i,])  #X is a design matix of environmental covariates.
+            z[i,k] ~ dbern(psi[i,k])
+        }
+    }
+    
+    # Observation model for observed data (detection indicators Y)
+    for (k in 1:nspec){     #Species
+        for (i in 1:nsite) {    #Sites
+            for (j in 1:tv[i]){   #Reps/Visits
+                logit(p[i,j,k]) <- lp[k] + beta.gear[k]*gear[i,j]
+                p.eff[i,j,k] <- z[i,k] * p[i,j,k]
+                Y[i,j,k] ~ dbern(p.eff[i,j,k])
+            }
+        }
+    }
+    
+    
+    # Derived quantities
+    for (i in 1:nsite) {
+        Nsite[i] <- sum(z[i,])       # Number of occurring species at each site
+    }
+    
+} 
