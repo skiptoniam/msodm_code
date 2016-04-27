@@ -1,4 +1,5 @@
-#Here we present a hieachical multi-species occupancy detection model that estimates the occurrance and detection of observed species within surveys. We do not try and extrapolate unobserved species.
+#Here we present a hieachical multi-species occupancy detection model that estimates the occurrance and detection of observed species
+#within surveys. We do not try and extrapolate unobserved species.
 
 model {
     
@@ -41,10 +42,10 @@ model {
     }
     
     # Observation model for observed data (detection indicators Y)
-    for (k in 1:nspec){     #Species
-        for (i in 1:nsite) {    #Sites
-            for (j in 1:tv[i]){   #Reps/Visits
-                logit(p[i,j,k]) <- lp[k] + beta.gear[k]*gear[i,j]
+    for (k in 1:nspec){     #Species (number of species)
+        for (i in 1:nsite) {    #Sites (number of cells)
+            for (j in 1:tv[i]){     #Surveys (per-cell)
+                logit(p[i,j,k]) <- lp[k] + beta.gear[k]*gear[i,j] #gear is a covariate that indicates the collection method used and how it influences the detection model.
                 p.eff[i,j,k] <- z[i,k] * p[i,j,k]
                 Y[i,j,k] ~ dbern(p.eff[i,j,k])
             }
