@@ -1,3 +1,5 @@
+#Here we present a hieachical multi-species occupancy detection model that estimates the occurrance and detection of observed species within surveys. We do not try and extrapolate unobserved species.
+
 model {
     
     # Priors 
